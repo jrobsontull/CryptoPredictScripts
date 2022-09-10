@@ -230,7 +230,7 @@ def main():
                     color.OKGREEN
                     + f"\n[Interval {i}]: "
                     + color.ENDC
-                    + f"Processing {interval['start']} to {interval['average']}"
+                    + f"Processing {interval['start']} to {interval['end']}"
                 )
 
                 allTweets = list()
@@ -254,7 +254,7 @@ def main():
                         color.WARNING
                         + "[Info]: "
                         + color.ENDC
-                        + f"Collecting more tweets to reach {env.contents['TWEETS_PER_INTERVAL']} for interval {interval['start']} to {interval['average']}"
+                        + f"Collecting more tweets to reach {env.contents['TWEETS_PER_INTERVAL']} for interval {interval['start']} to {interval['end']}"
                     )
 
                     checkApiLimits(limits)
