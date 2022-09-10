@@ -1,5 +1,6 @@
 # module imports
 import calendar
+from msilib.schema import Error
 import requests
 import datetime as dt
 import calendar
@@ -49,7 +50,23 @@ def twitterGet(startDt, endDt, maxTweets=10, nextToken="", errorWaitTimeMultipli
     if len(nextToken) > 1:
         params["next_token"] = nextToken
 
-    response = requests.get(url, auth=establishTwitterOAuth, params=params)
+    try:
+        response = requests.get(url, auth=establishTwitterOAuth, params=params)
+    except Error as e:
+        print(color.FAIL + "[Error]: " + color.ENDC + f"Failed to make request. {e}")
+        if errorWaitTimeMultiplier == 1 or errorWaitTimeMultiplier == 2:
+            print(
+                color.WARNING
+                + "[Info]: "
+                + color.ENDC
+                + f"Sleeping for short period of time before retrying"
+            )
+            t.sleep(10 * errorWaitTimeMultiplier)  # sleep for a bit before trying again
+            nextMultiplier = errorWaitTimeMultiplier * 2
+            return twitterGet(startDt, endDt, maxTweets, nextToken, nextMultiplier)
+        else:
+            # more serious error
+            sys.exit(1)
 
     if response.status_code == 200:
         limits = {
