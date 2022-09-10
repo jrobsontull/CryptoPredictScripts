@@ -60,6 +60,12 @@ def twitterGet(startDt, endDt, maxTweets=10, nextToken="", errorWaitTimeMultipli
     elif response.status_code == 429:
         # some API limit reached, this shouldn't happen
         # set up a series of recursive waits until request goes through
+        print(
+            color.FAIL
+            + "[Error]: "
+            + color.ENDC
+            + f"429 error. Trying sequential waiting. Current wait {10* errorWaitTimeMultiplier} seconds"
+        )
         t.sleep(10 * errorWaitTimeMultiplier)
         nextMultiplier = errorWaitTimeMultiplier * 2
         return twitterGet(startDt, endDt, maxTweets, nextToken, nextMultiplier)
@@ -132,7 +138,7 @@ def checkApiLimits(limits):
             color.WARNING
             + "[Info]: "
             + color.ENDC
-            + f"15 minute API limit reached. Sleeping for {remainingTime} before making further requests."
+            + f"15 minute API limit reached. Sleeping for {remainingTime:.1f} seconds before making further requests"
         )
         t.sleep(remainingTime)
 
@@ -145,7 +151,7 @@ def checkReqTimeLimit(start, end):
             color.WARNING
             + "[Info]: "
             + color.ENDC
-            + f"Per second API limit reached. Waiting for {(1 - elapsedTimeSeconds + 0.1):.2f} seconds."
+            + f"Per second API limit reached. Waiting for {(1 - elapsedTimeSeconds + 0.1):.2f} seconds"
         )
         t.sleep(1 - elapsedTimeSeconds + 0.1)
 
