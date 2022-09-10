@@ -1,3 +1,4 @@
+# module imports
 import calendar
 import requests
 import datetime as dt
@@ -7,13 +8,15 @@ import csv
 from pymongo import MongoClient
 import sys
 from dateutil import parser
+
+# utils
 from env import *
 from colors import TColors as color
 
 # Set up env file
-print("Loading .env")
+print("[Setup]: Loading .env")
 env = Env(".env")
-print("Loaded.")
+print(color.OKGREEN + "[Setup]: Environmental variables loaded" + color.ENDC)
 
 # Twitter API auth token
 bearer_token = env.contents["TWITTER_API_TOKEN"]
@@ -34,7 +37,7 @@ def establishTwitterOAuth(req):
 
 # Request tweets from Twitter API
 # Returns tweet data and header limits
-def twitterGet(startDt, endDt, maxTweets=10, nextToken=""):
+def twitterGet(startDt, endDt, maxTweets=10, nextToken="", errorWaitTimeMultiplier=1):
     url = "https://api.twitter.com/2/tweets/search/all"
     params = {
         "query": "(bitcoin OR #bitcoin) -is:retweet lang:en",
@@ -48,14 +51,20 @@ def twitterGet(startDt, endDt, maxTweets=10, nextToken=""):
 
     response = requests.get(url, auth=establishTwitterOAuth, params=params)
 
-    if response.status_code != 200:
-        raise Exception(response.status_code, response.text)
-    else:
+    if response.status_code == 200:
         limits = {
             "remaining": response.headers["x-rate-limit-remaining"],
             "resetTime": response.headers["x-rate-limit-reset"],
         }
         return response.json(), limits
+    elif response.status_code == 429:
+        # some API limit reached, this shouldn't happen
+        # set up a series of recursive waits until request goes through
+        t.sleep(10 * errorWaitTimeMultiplier)
+        nextMultiplier = errorWaitTimeMultiplier * 2
+        return twitterGet(startDt, endDt, maxTweets, nextToken, nextMultiplier)
+    else:
+        raise Exception(response.status_code, response.text, response)
 
 
 # Find number of days in a year
@@ -239,7 +248,7 @@ def main():
                         color.WARNING
                         + "[Info]: "
                         + color.ENDC
-                        + f"Collecting more tweets to 20"
+                        + f"Collecting more tweets to reach {env.contents['TWEETS_PER_INTERVAL']} for interval {interval['start']} to {interval['average']}"
                     )
 
                     checkApiLimits(limits)
