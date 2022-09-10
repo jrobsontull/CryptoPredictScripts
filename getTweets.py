@@ -170,7 +170,7 @@ def processTweets(csvWriter, tweetsList, collection):
         )
 
     # Push to mongoDB
-    # postDocs(collection, docsToPush)
+    postDocs(collection, docsToPush)
 
 
 def main():
@@ -207,7 +207,7 @@ def main():
             # Get first half hour in an interval
             print(
                 color.OKGREEN
-                + f"\n[Day {i}]: "
+                + f"\n[Interval {i}]: "
                 + color.ENDC
                 + f"Processing {interval['start']} to {interval['average']}"
             )
@@ -256,29 +256,9 @@ def main():
 
                 reqEndTime = t.time()
 
-            # if response["meta"]["next_token"]:
-            #     print("Collecting next response for above interval")
-
-            #     checkApiLimits(limits)
-            #     checkReqTimeLimit(reqStartTime, reqEndTime)
-
-            #     nextToken = response["meta"]["next_token"]
-            #     reqStartTime = t.time()
-            #     response, limits = twitterGet(
-            #         interval["start"], interval["end"], nextToken
-            #     )
-            #     reqEndTime = t.time()
-
-            #     tweetsRes2 = response["data"]  # array of tweets
-            #     allTweets + tweetsRes2
-
-            #     reqEndTime = t.time()
-            # else:
-            #     print("No next token, moving on found")
-
             # Process data
             processTweets(writer, allTweets, collection)
-            print(color.OKGREEN + "Day finished\n" + color.ENDC)
+            print(color.OKGREEN + "Interval finished\n" + color.ENDC)
 
             # Check API limits before proceeding
             checkReqTimeLimit(reqStartTime, reqEndTime)
