@@ -195,74 +195,74 @@ def main():
 
     days = getDatetimeDaysForSearch(searchYear, startSearchDay, endSearchDay)
 
-    intervals = getTimeIntervalsPairsForDay(days)
-
     with open(
         f"{str(searchYear)}_tweets.csv", "w", newline="", encoding="UTF-8"
     ) as outFile:
         writer = csv.writer(outFile)
         writer.writerow(["tweetId", "timestamp", "text"])  # header
 
-        for i, interval in enumerate(intervals):
-            # Get first half hour in an interval
-            print(
-                color.OKGREEN
-                + f"\n[Interval {i}]: "
-                + color.ENDC
-                + f"Processing {interval['start']} to {interval['average']}"
-            )
-
-            allTweets = list()
-
-            nextToken = ""
-            reqStartTime = t.time()
-            response, limits = twitterGet(
-                interval["start"], interval["end"], 10, nextToken
-            )
-
-            allTweets = response["data"]  # array of tweets
-
-            reqEndTime = t.time()
-
-            while (
-                len(allTweets) < int(env.contents["TWEETS_PER_INTERVAL"])
-                and response["meta"]["next_token"]
-            ):
-                # Keep grabbing tweets for this time interval
+        for dayNum, day in enumerate(days):
+            print(color.OKGREEN + f"\nStarting day {dayNum}.." + color.ENDC)
+            intervals = getTimeIntervalsPairsForDay(day["start"], day["end"])
+            for i, interval in enumerate(intervals):
+                # Get first half hour in an interval
                 print(
-                    color.WARNING
-                    + "[Info]: "
+                    color.OKGREEN
+                    + f"\n[Interval {i}]: "
                     + color.ENDC
-                    + f"Collecting more tweets to 20"
+                    + f"Processing {interval['start']} to {interval['average']}"
                 )
 
-                checkApiLimits(limits)
-                checkReqTimeLimit(reqStartTime, reqEndTime)
+                allTweets = list()
 
-                nextToken = response["meta"]["next_token"]
-                tweetsLeftToGet = int(env.contents["TWEETS_PER_INTERVAL"]) - len(
-                    allTweets
-                )
-                maxTweetsParam = 10 if tweetsLeftToGet < 10 else tweetsLeftToGet
-
+                nextToken = ""
                 reqStartTime = t.time()
                 response, limits = twitterGet(
-                    interval["start"], interval["end"], maxTweetsParam, nextToken
+                    interval["start"], interval["end"], 10, nextToken
                 )
-                reqEndTime = t.time()
 
-                tweetsRes2 = response["data"]  # array of tweets
-                allTweets += tweetsRes2
+                allTweets = response["data"]  # array of tweets
 
                 reqEndTime = t.time()
 
-            # Process data
-            processTweets(writer, allTweets, collection)
-            print(color.OKGREEN + "Interval finished\n" + color.ENDC)
+                while (
+                    len(allTweets) < int(env.contents["TWEETS_PER_INTERVAL"])
+                    and response["meta"]["next_token"]
+                ):
+                    # Keep grabbing tweets for this time interval
+                    print(
+                        color.WARNING
+                        + "[Info]: "
+                        + color.ENDC
+                        + f"Collecting more tweets to 20"
+                    )
 
-            # Check API limits before proceeding
-            checkReqTimeLimit(reqStartTime, reqEndTime)
-            checkApiLimits(limits)
+                    checkApiLimits(limits)
+                    checkReqTimeLimit(reqStartTime, reqEndTime)
+
+                    nextToken = response["meta"]["next_token"]
+                    tweetsLeftToGet = int(env.contents["TWEETS_PER_INTERVAL"]) - len(
+                        allTweets
+                    )
+                    maxTweetsParam = 10 if tweetsLeftToGet < 10 else tweetsLeftToGet
+
+                    reqStartTime = t.time()
+                    response, limits = twitterGet(
+                        interval["start"], interval["end"], maxTweetsParam, nextToken
+                    )
+
+                    tweetsRes2 = response["data"]  # array of tweets
+                    allTweets += tweetsRes2
+
+                    reqEndTime = t.time()
+
+                # Process data
+                processTweets(writer, allTweets, collection)
+                print(color.OKGREEN + "Interval finished\n" + color.ENDC)
+
+                # Check API limits before proceeding
+                checkReqTimeLimit(reqStartTime, reqEndTime)
+                checkApiLimits(limits)
 
 
 if __name__ == "__main__":
