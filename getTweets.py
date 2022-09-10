@@ -195,7 +195,7 @@ def main():
 
     days = getDatetimeDaysForSearch(searchYear, startSearchDay, endSearchDay)
 
-    intervals = getTimeIntervalsPairsForDay(days[0]["start"], days[0]["end"])
+    intervals = getTimeIntervalsPairsForDay(days)
 
     with open(
         f"{str(searchYear)}_tweets.csv", "w", newline="", encoding="UTF-8"
