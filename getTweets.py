@@ -1,6 +1,5 @@
 # module imports
 import calendar
-from msilib.schema import Error
 import requests
 import datetime as dt
 import calendar
@@ -52,7 +51,7 @@ def twitterGet(startDt, endDt, maxTweets=10, nextToken="", errorWaitTimeMultipli
 
     try:
         response = requests.get(url, auth=establishTwitterOAuth, params=params)
-    except Error as e:
+    except Exception as e:
         print(color.FAIL + "[Error]: " + color.ENDC + f"Failed to make request. {e}")
         if errorWaitTimeMultiplier == 1 or errorWaitTimeMultiplier == 2:
             print(
