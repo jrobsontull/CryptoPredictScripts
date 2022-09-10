@@ -5,5 +5,5 @@ class Env:
 
         with open(self.env, "r") as f:
             for line in f:
-                tmp = line.split("=")
+                tmp = line.split(" = ")
                 self.contents[tmp[0].strip()] = tmp[1].strip().strip("\n")
