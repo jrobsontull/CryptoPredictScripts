@@ -227,7 +227,7 @@ def main():
 
                 while (
                     len(allTweets) < int(env.contents["TWEETS_PER_INTERVAL"])
-                    and response["meta"]["next_token"]
+                    and "next_token" in response["meta"]
                 ):
                     # Keep grabbing tweets for this time interval
                     print(
