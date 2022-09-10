@@ -184,12 +184,17 @@ def main():
         print("Connection established.")
     collection = dbConn["tweets"]  # db collection
 
-    searchYear = int(input("\nWhat year to grab tweets from? (XXXX)\n- "))
+    """ searchYear = int(input("\nWhat year to grab tweets from? (XXXX)\n- "))
 
     startSearchDay = int(input("\nWhat day to start tweets from? (1-365)\n- "))
     endSearchDay = int(
         input("\nWhat day to start tweets from? (1-365 or 0 to calculate end)\n- ")
-    )
+    ) """
+
+    searchYear = 2021
+    startSearchDay = 1
+    endSearchDay = 0
+
     if endSearchDay == 0:
         endSearchDay = defaultYearDays(searchYear)
 
