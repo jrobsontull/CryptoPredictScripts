@@ -222,9 +222,9 @@ def main():
         input("\nWhat day to start tweets from? (1-365 or 0 to calculate end)\n- ")
     ) """
 
-    searchYear = 2021
-    startSearchDay = 1
-    endSearchDay = 0
+    searchYear = int(env.contents["SEARCH_YEAR"])
+    startSearchDay = int(env.contents["START_SEARCH_DAY"])
+    endSearchDay = int(env.contents["END_SEARCH_DAY"])
 
     if endSearchDay == 0:
         endSearchDay = defaultYearDays(searchYear)
@@ -257,7 +257,15 @@ def main():
                     interval["start"], interval["end"], 10, nextToken
                 )
 
-                allTweets = response["data"]  # array of tweets
+                if "data" in response:
+                    allTweets = response["data"]  # array of tweets
+                else:
+                    print(
+                        color.FAIL
+                        + "[Error]: "
+                        + color.ENDC
+                        + f"No data in response. {response}"
+                    )
 
                 reqEndTime = t.time()
 
@@ -287,8 +295,16 @@ def main():
                         interval["start"], interval["end"], maxTweetsParam, nextToken
                     )
 
-                    tweetsRes2 = response["data"]  # array of tweets
-                    allTweets += tweetsRes2
+                    if "data" in response:
+                        tweetsRes2 = response["data"]  # array of tweets
+                        allTweets += tweetsRes2
+                    else:
+                        print(
+                            color.FAIL
+                            + "[Error]: "
+                            + color.ENDC
+                            + f"No data in response. {response}"
+                        )
 
                     reqEndTime = t.time()
 
