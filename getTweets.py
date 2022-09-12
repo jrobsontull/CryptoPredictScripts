@@ -51,9 +51,34 @@ def twitterGet(startDt, endDt, maxTweets=10, nextToken="", errorWaitTimeMultipli
 
     try:
         response = requests.get(url, auth=establishTwitterOAuth, params=params)
+
+        if response.status_code == 200:
+            limits = {
+                "remaining": response.headers["x-rate-limit-remaining"],
+                "resetTime": response.headers["x-rate-limit-reset"],
+            }
+            return response.json(), limits
+        elif response.status_code == 429:
+            # some API limit reached, this shouldn't happen
+            # set up a series of recursive waits until request goes through
+            print(
+                color.FAIL
+                + "[Error]: "
+                + color.ENDC
+                + f"429 error. Trying sequential waiting. Current wait {10* errorWaitTimeMultiplier} seconds"
+            )
+            t.sleep(10 * errorWaitTimeMultiplier)
+            nextMultiplier = errorWaitTimeMultiplier * 2
+            return twitterGet(startDt, endDt, maxTweets, nextToken, nextMultiplier)
+        else:
+            raise Exception(response.status_code, response.text, response)
     except Exception as e:
         print(color.FAIL + "[Error]: " + color.ENDC + f"Failed to make request. {e}")
-        if errorWaitTimeMultiplier == 1 or errorWaitTimeMultiplier == 2:
+        if (
+            errorWaitTimeMultiplier == 1
+            or errorWaitTimeMultiplier == 2
+            or errorWaitTimeMultiplier == 4
+        ):
             print(
                 color.WARNING
                 + "[Info]: "
@@ -66,27 +91,6 @@ def twitterGet(startDt, endDt, maxTweets=10, nextToken="", errorWaitTimeMultipli
         else:
             # more serious error
             sys.exit(1)
-
-    if response.status_code == 200:
-        limits = {
-            "remaining": response.headers["x-rate-limit-remaining"],
-            "resetTime": response.headers["x-rate-limit-reset"],
-        }
-        return response.json(), limits
-    elif response.status_code == 429:
-        # some API limit reached, this shouldn't happen
-        # set up a series of recursive waits until request goes through
-        print(
-            color.FAIL
-            + "[Error]: "
-            + color.ENDC
-            + f"429 error. Trying sequential waiting. Current wait {10* errorWaitTimeMultiplier} seconds"
-        )
-        t.sleep(10 * errorWaitTimeMultiplier)
-        nextMultiplier = errorWaitTimeMultiplier * 2
-        return twitterGet(startDt, endDt, maxTweets, nextToken, nextMultiplier)
-    else:
-        raise Exception(response.status_code, response.text, response)
 
 
 # Find number of days in a year
